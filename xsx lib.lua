@@ -679,7 +679,24 @@ function library:Init(Config)
 	Logo.BorderSizePixel = 0
 	Logo.Position = UDim2.new(0.5, 0, 0.5, 0)
 	Logo.Size = UDim2.new(0, 150, 0, 150)
-	Logo.Image = "rbxassetid://119585098282148"
+	local logoImagePath = "xsxlib_exodia_letter.png"
+	local getAsset = getcustomasset or getsynasset
+	if writefile and getAsset and game.HttpGet then
+		local success, image = pcall(function()
+			local imageData = game:HttpGet("https://raw.githubusercontent.com/DerekLuaU/xsxlib/main/Exodia%20Letter.png")
+			assert(string.sub(imageData, 1, 8) == "\137PNG\r\n\26\n", "Downloaded intro logo is not a PNG image")
+			writefile(logoImagePath, imageData)
+			return getAsset(logoImagePath)
+		end)
+
+		if success then
+			Logo.Image = image
+		else
+			Warn("Could not load intro logo:", image)
+		end
+	else
+		Warn("Could not load intro logo: executor must provide game:HttpGet, writefile, and getcustomasset or getsynasset")
+	end
 	Logo.ImageColor3 = library.palette.white
 	Logo.ImageTransparency = 1
 	Logo.ScaleType = Enum.ScaleType.Fit
