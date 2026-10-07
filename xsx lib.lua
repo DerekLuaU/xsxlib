@@ -63,8 +63,8 @@ local library = {
 	palette = palette,
 	backgroundColor = palette.black,
 	headerColor = palette.white,
-	companyColor = palette.silver,
-	acientColor = palette.silver,
+	companyColor = palette.white,
+	acientColor = palette.white,
 	darkGray = palette.charcoal,
 	lightGray = palette.graphite,
 
@@ -642,8 +642,7 @@ function library:Init(Config)
 
 	local introduction = Instance.new("ScreenGui", CoreGui)
 	local background = Instance.new("Frame")
-	local Logo = Instance.new("TextLabel")
-	local backgroundGradient_2 = Instance.new("UIGradient")
+	local Logo = Instance.new("ImageLabel")
 	local bar = Instance.new("Frame")
 	local barCorner = Instance.new("UICorner")
 	local messages = Instance.new("Frame")
@@ -676,22 +675,14 @@ function library:Init(Config)
 
 	Logo.Parent = background
 	Logo.AnchorPoint = Vector2.new(0.5, 0.5)
-	Logo.BackgroundColor3 = library.palette.white
-	Logo.BackgroundTransparency = 1.000
-	Logo.TextTransparency = 1
-	Logo.BorderColor3 = library.palette.black
+	Logo.BackgroundTransparency = 1
 	Logo.BorderSizePixel = 0
 	Logo.Position = UDim2.new(0.5, 0, 0.5, 0)
-	Logo.Size = UDim2.new(0, 448, 0, 150)
-	Logo.Font = Enum.Font.Unknown
-	Logo.FontFace.Weight = Enum.FontWeight.Bold
-	Logo.Font = Enum.Font.FredokaOne
-	Logo.TextColor3 = library.acientColor
-	Logo.TextSize = 100.000
-
-	backgroundGradient_2.Color = ColorSequence.new{ColorSequenceKeypoint.new(0.00, library.palette.white), ColorSequenceKeypoint.new(1.00, library.palette.metallic)}
-	backgroundGradient_2.Rotation = 90
-	backgroundGradient_2.Parent = Logo
+	Logo.Size = UDim2.new(0, 150, 0, 150)
+	Logo.Image = "rbxassetid://119585098282148"
+	Logo.ImageColor3 = library.palette.white
+	Logo.ImageTransparency = 1
+	Logo.ScaleType = Enum.ScaleType.Fit
 
 	bar.Parent = background
 	bar.BackgroundColor3 = library.acientColor
@@ -750,20 +741,17 @@ function library:Init(Config)
 	TweenWrapper:CreateStyle("introduction end",0.5)
 
 	function library:BeginIntroduction()
-		Logo.Text = library.company:sub(1, 1):upper()
-
 		--TweenService:Create(edge, TweenWrapper.Styles["introduction"], {BackgroundTransparency = 0}):Play()
 		TweenService:Create(background, TweenWrapper.Styles["introduction"], {BackgroundTransparency = 0}):Play()
 		wait(.2)
 		TweenService:Create(IntroStroke, TweenWrapper.Styles["introduction end"], {Transparency = 0.55}):Play()
 		TweenService:Create(bar, TweenWrapper.Styles["introduction"], {BackgroundTransparency = 0.2}):Play()
 		wait(.3)
-		TweenService:Create(Logo, TweenWrapper.Styles["introduction"], {TextTransparency = 0}):Play()
+		TweenService:Create(Logo, TweenWrapper.Styles["introduction"], {ImageTransparency = 0}):Play()
 
 		wait(2)
 
-		local LogoTween = TweenService:Create(Logo, TweenWrapper.Styles["introduction"], {TextTransparency = 1})
-		TweenService:Create(Logo, TweenInfo.new(1), {TextSize = 0}):Play()
+		local LogoTween = TweenService:Create(Logo, TweenWrapper.Styles["introduction"], {ImageTransparency = 1})
 		LogoTween:Play()
 		LogoTween.Completed:Wait()
 	end
@@ -798,7 +786,7 @@ function library:Init(Config)
 		--TweenService:Create(edge, TweenWrapper.Styles["introduction end"], {BackgroundTransparency = 1}):Play()
 		TweenService:Create(background, TweenWrapper.Styles["introduction end"], {BackgroundTransparency = 1}):Play()
 		TweenService:Create(bar, TweenWrapper.Styles["introduction end"], {BackgroundTransparency = 1}):Play()
-		TweenService:Create(Logo, TweenWrapper.Styles["introduction end"], {TextTransparency = 1}):Play()
+		TweenService:Create(Logo, TweenWrapper.Styles["introduction end"], {ImageTransparency = 1}):Play()
 		TweenService:Create(IntroStroke, TweenWrapper.Styles["introduction end"], {Transparency = 1}):Play()
 	end
 
