@@ -83,6 +83,35 @@ local function Warn(...)
 	warn("Depso:", ...)
 end
 
+local cachedExodiaLogo
+local function LoadExodiaLogo()
+	if cachedExodiaLogo then
+		return cachedExodiaLogo
+	end
+
+	local logoImagePath = "xsxlib_exodia_letter.png"
+	local getAsset = getcustomasset or getsynasset
+	if not writefile or not getAsset or not game.HttpGet then
+		Warn("Could not load Exodia logo: executor must provide game:HttpGet, writefile, and getcustomasset or getsynasset")
+		return nil
+	end
+
+	local success, image = pcall(function()
+		local imageData = game:HttpGet("https://raw.githubusercontent.com/DerekLuaU/xsxlib/main/Exodia%20Letter.png")
+		assert(string.sub(imageData, 1, 8) == "\137PNG\r\n\26\n", "Downloaded logo is not a PNG image")
+		writefile(logoImagePath, imageData)
+		return getAsset(logoImagePath)
+	end)
+
+	if not success then
+		Warn("Could not load Exodia logo:", image)
+		return nil
+	end
+
+	cachedExodiaLogo = image
+	return cachedExodiaLogo
+end
+
 -- / Remove the previous interface
 if _G.DepsoGUI then
 	pcall(function()
@@ -372,9 +401,11 @@ function library:Init(Config)
 		local barLayout = Instance.new("UIListLayout")
 		local backgroundGradient = Instance.new("UIGradient")
 		local backgroundCorner = Instance.new("UICorner")
+		local waterLogo = Instance.new("ImageLabel")
 		local waterText = Instance.new("TextLabel")
 		local waterPadding = Instance.new("UIPadding")
 		local backgroundLayout = Instance.new("UIListLayout")
+		local logoImage = LoadExodiaLogo()
 
 		edge.Parent = watermark
 		edge.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -416,10 +447,22 @@ function library:Init(Config)
 		backgroundCorner.CornerRadius = UDim.new(0, 2)
 		backgroundCorner.Parent = background
 
+		if logoImage then
+			waterLogo.Parent = background
+			waterLogo.BackgroundTransparency = 1
+			waterLogo.BorderSizePixel = 0
+			waterLogo.LayoutOrder = 1
+			waterLogo.Size = UDim2.new(0, 16, 0, 16)
+			waterLogo.Image = logoImage
+			waterLogo.ImageColor3 = library.palette.white
+			waterLogo.ImageTransparency = 1
+			waterLogo.ScaleType = Enum.ScaleType.Fit
+		end
+
 		waterText.Parent = background
 		waterText.BackgroundColor3 = library.palette.white
 		waterText.BackgroundTransparency = 1.000
-		waterText.Position = UDim2.new(0, 0, -0.0416666679, 0)
+		waterText.LayoutOrder = 2
 		waterText.Size = UDim2.new(0, 0, 0, 24)
 		waterText.Font = library.Font
 		waterText.Text = text
@@ -429,7 +472,10 @@ function library:Init(Config)
 		waterText.RichText = true
 
 		local NewSize = TextService:GetTextSize(waterText.Text, waterText.TextSize, waterText.Font, Vector2.new(math.huge, math.huge))
-		waterText.Size = UDim2.new(0, NewSize.X + 8, 0, 24)
+		local textWidth = NewSize.X + 8
+		local logoWidth = logoImage and 16 or 0
+		local contentWidth = textWidth + logoWidth + (logoImage and 4 or 0)
+		waterText.Size = UDim2.new(0, textWidth, 0, 24)
 
 		waterPadding.Parent = waterText
 		waterPadding.PaddingBottom = UDim.new(0, 4)
@@ -438,18 +484,22 @@ function library:Init(Config)
 		waterPadding.PaddingTop = UDim.new(0, 4)
 
 		backgroundLayout.Parent = background
+		backgroundLayout.FillDirection = Enum.FillDirection.Horizontal
 		backgroundLayout.SortOrder = Enum.SortOrder.LayoutOrder
 		backgroundLayout.VerticalAlignment = Enum.VerticalAlignment.Center
 
 		coroutine.wrap(function()
 			TweenService:Create(edge, TweenWrapper.Styles["wm"], {BackgroundTransparency = 0}):Play()
-			TweenService:Create(edge, TweenWrapper.Styles["wm"], {Size = UDim2.new(0, NewSize.x + 10, 0, 26)}):Play()
+			TweenService:Create(edge, TweenWrapper.Styles["wm"], {Size = UDim2.new(0, contentWidth + 2, 0, 26)}):Play()
 			TweenService:Create(background, TweenWrapper.Styles["wm"], {BackgroundTransparency = 0}):Play()
-			TweenService:Create(background, TweenWrapper.Styles["wm"], {Size = UDim2.new(0, NewSize.x + 8, 0, 24)}):Play()
+			TweenService:Create(background, TweenWrapper.Styles["wm"], {Size = UDim2.new(0, contentWidth, 0, 24)}):Play()
 			wait(.2)
-			TweenService:Create(bar, TweenWrapper.Styles["wm"], {Size = UDim2.new(0, NewSize.x + 8, 0, 1)}):Play()
+			TweenService:Create(bar, TweenWrapper.Styles["wm"], {Size = UDim2.new(0, contentWidth, 0, 1)}):Play()
 			wait(.1)
 			TweenService:Create(waterText, TweenWrapper.Styles["wm"], {TextTransparency = 0}):Play()
+			if logoImage then
+				TweenService:Create(waterLogo, TweenWrapper.Styles["wm"], {ImageTransparency = 0}):Play()
+			end
 		end)()
 
 		local WatermarkFunctions = {}
@@ -466,14 +516,17 @@ function library:Init(Config)
 
 		function WatermarkFunctions:SetText(new)
 			new = new or text
+			text = new
 			waterText.Text = new
 
 			local NewSize = TextService:GetTextSize(waterText.Text, waterText.TextSize, waterText.Font, Vector2.new(math.huge, math.huge))
+			local textWidth = NewSize.X + 8
+			local contentWidth = textWidth + logoWidth + (logoImage and 4 or 0)
+			waterText.Size = UDim2.new(0, textWidth, 0, 24)
 			coroutine.wrap(function()
-				TweenService:Create(edge, TweenWrapper.Styles["wm_2"], {Size = UDim2.new(0, NewSize.x + 10, 0, 26)}):Play()
-				TweenService:Create(background, TweenWrapper.Styles["wm_2"], {Size = UDim2.new(0, NewSize.x + 8, 0, 24)}):Play()
-				TweenService:Create(bar, TweenWrapper.Styles["wm_2"], {Size = UDim2.new(0, NewSize.x + 8, 0, 1)}):Play()
-				TweenService:Create(waterText, TweenWrapper.Styles["wm_2"], {Size = UDim2.new(0, NewSize.x + 8, 0, 1)}):Play()
+				TweenService:Create(edge, TweenWrapper.Styles["wm_2"], {Size = UDim2.new(0, contentWidth + 2, 0, 26)}):Play()
+				TweenService:Create(background, TweenWrapper.Styles["wm_2"], {Size = UDim2.new(0, contentWidth, 0, 24)}):Play()
+				TweenService:Create(bar, TweenWrapper.Styles["wm_2"], {Size = UDim2.new(0, contentWidth, 0, 1)}):Play()
 			end)()
 
 			return self
@@ -682,24 +735,7 @@ function library:Init(Config)
 	Logo.BorderSizePixel = 0
 	Logo.Position = UDim2.new(0.5, 0, 0.5, 0)
 	Logo.Size = UDim2.new(0, 190, 0, 190)
-	local logoImagePath = "xsxlib_exodia_letter.png"
-	local getAsset = getcustomasset or getsynasset
-	if writefile and getAsset and game.HttpGet then
-		local success, image = pcall(function()
-			local imageData = game:HttpGet("https://raw.githubusercontent.com/DerekLuaU/xsxlib/main/Exodia%20Letter.png")
-			assert(string.sub(imageData, 1, 8) == "\137PNG\r\n\26\n", "Downloaded intro logo is not a PNG image")
-			writefile(logoImagePath, imageData)
-			return getAsset(logoImagePath)
-		end)
-
-		if success then
-			Logo.Image = image
-		else
-			Warn("Could not load intro logo:", image)
-		end
-	else
-		Warn("Could not load intro logo: executor must provide game:HttpGet, writefile, and getcustomasset or getsynasset")
-	end
+	Logo.Image = LoadExodiaLogo() or ""
 	Logo.ImageColor3 = library.palette.white
 	Logo.ImageTransparency = 1
 	Logo.ScaleType = Enum.ScaleType.Fit
