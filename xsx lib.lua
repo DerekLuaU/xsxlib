@@ -678,7 +678,7 @@ function library:Init(Config)
 	Logo.BackgroundTransparency = 1
 	Logo.BorderSizePixel = 0
 	Logo.Position = UDim2.new(0.5, 0, 0.5, 0)
-	Logo.Size = UDim2.new(0, 150, 0, 150)
+	Logo.Size = UDim2.new(0, 190, 0, 190)
 	local logoImagePath = "xsxlib_exodia_letter.png"
 	local getAsset = getcustomasset or getsynasset
 	if writefile and getAsset and game.HttpGet then
