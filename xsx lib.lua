@@ -343,6 +343,9 @@ function library:Init(Config)
 	for Key, Value in next, Config do
 		library[Key] = Value
 	end
+	library.companyColor = palette.white
+	library.acientColor = palette.white
+	library.RainbowEnabled = false
 
 	local watermark = Instance.new("ScreenGui", CoreGui)
 	watermark.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
